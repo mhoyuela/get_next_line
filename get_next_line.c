@@ -6,7 +6,7 @@
 /*   By: mhoyuela <mhoyuela@student.42.fr>          #+#  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024-05-22 13:23:02 by mhoyuela          #+#    #+#             */
-/*   Updated: 2024-05-22 13:23:02 by mhoyuela         ###   ########.fr       */
+/*   Updated: 2024/05/27 16:03:54 by mhoyuela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,7 @@ char	*buffer_update(char *buffer)
 		return (NULL);
 	i++;
 	j = 0;
-	while (buffer[i])
+	while (buffer[i] != '\0')
 	{
 		ptr[j++] = buffer[i++];
 	}
@@ -40,24 +40,21 @@ char	*buffer_update(char *buffer)
 	return (ptr);
 }
 
-/*la manera en la que el buffer va a vanzando y se queda en la
-ultima linea quye contó es con los dos contadores, mientras la i avanza
-la j se reinicializa a 0*/
 char	*ft_line(char *buffer)
 {
 	int		i;
 	char	*line;
 
 	i = 0;
-	if (!buffer)
+	if (!buffer[i])
 		return (NULL);
-	while (buffer[i] && buffer[i] != '\n')
+	while (buffer[i] != '\0' && buffer[i] != '\n')
 		i++;
 	line = malloc((i + 2) * sizeof(char));
 	if (!line)
 		return (NULL);
 	i = 0;
-	while (buffer[i] && buffer[i] != '\n')
+	while (buffer[i] != '\0' && buffer[i] != '\n')
 	{
 		line[i] = buffer[i];
 		i++;
@@ -71,14 +68,10 @@ char	*ft_line(char *buffer)
 	return (line);
 }
 
-/*No puedo hacerlo todo en un bucle poeque si lo hago en uno
-no puedo darle el valor exacto de memoria a line, y si meto line
-dentro del bucle me va crear memoria para cada vez que entre en el buvle*/
-	
 char	*ft_read_fd(int fd, char *buffer)
 {
 	char	*ptr;
-	size_t	bytes;
+	int		bytes;
 	char	*tmp;
 
 	bytes = 1;
@@ -86,9 +79,9 @@ char	*ft_read_fd(int fd, char *buffer)
 	if (!ptr)
 		return (NULL);
 	while (!ft_strchr(buffer, '\n') && (bytes != 0))
-	{//aqui bytes sera 0 si ha leido todo el archivo
-		bytes = read(fd, ptr, BUFFER_SIZE);//EN EL BUCLE LEE DE BUFFER_SIZE EN BUFFER_SIZE
-		if ((int)bytes == -1)
+	{
+		bytes = read(fd, ptr, BUFFER_SIZE);
+		if (bytes == -1)
 		{
 			free(ptr);
 			return (NULL);
@@ -109,6 +102,15 @@ char	*get_next_line(int fd)
 
 	if (fd < 0 || BUFFER_SIZE < 0)
 		return (0);
+	if (read(fd, 0, 0) < 0)
+	{
+		if (buffer != NULL)
+		{
+			free(buffer);
+			buffer = NULL;
+		}
+		return (NULL);
+	}
 	if (buffer == NULL)
 	{
 		buffer = malloc(1 * sizeof(char));
@@ -122,35 +124,15 @@ char	*get_next_line(int fd)
 	return (line);
 }
 
-/*La variable estatica buffer(se llena de BUFFER_SIZE++)se declara en get_next_line
-y es estatica para que almacene el valor que devuelve ft_buffer_update, que lo modifica 
-cada vez que llamamos a la funcion 
-La funcion ft_read_fd recibe la clave de un archivo y llena el buffer con el
-contenido de ese archivo. ft_read_fd devuelve el buffer con todo el
-contenido del archivo.
-La funcion ft_line devuelve una linea recibe buffer. En La funcion ft_buffer_update 
-le quito la linea que me devuelve ft_line y actualizo el buffer.
-Después en get_next_line devuelvo la linea y el buffer se va acualizando
-porque es una variable estatica en get_next_line y tiene el ultimo valor
-de ft_buffer_update*/
-/*int main()
-{
-	int fd;
-	char *line;
-	const char *archivo = "/Documents/RepositoryGet";
-
-	fd = open(archivo, O_RDONLY);
-	printf("%s\n", line);
-	return (0);
-}*/
-/*int main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
     int     fd;
     char    *line;
     int     num_lines = 7;
 
 	(void)argc;
-    fd = open(argv[1], O_RDONLY);
+	(void)argv;
+    fd = 4;
     if (fd == -1)
     {
         printf("%d\n", fd);
@@ -165,4 +147,4 @@ de ft_buffer_update*/
         num_lines--;
     }
     return (0);
-}*/
+}
